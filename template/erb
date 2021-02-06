@@ -1,0 +1,3 @@
+\subsubsection{NAME.erb}
+NAME.erbの内容をリスト\ref{l:NAME}に示す。
+\lstinputlisting[caption=NAME.erbの内容, label=l:NAME]{source/erb/NAME.erb}

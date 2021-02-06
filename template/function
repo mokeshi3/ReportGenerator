@@ -1,0 +1,3 @@
+\subsubsection{NAME関数}
+NAME関数のソースコードをリスト\ref{l:NAME}に示す。
+\lstinputlisting[caption=NAMEのソースコード, label=l:NAME]{source/timer/NAME.js}

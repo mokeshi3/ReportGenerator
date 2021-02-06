@@ -1,0 +1,112 @@
+本章では先行研究のアルゴリズムについて述べる。
+
+\subsection{全体の流れ}
+本節ではアルゴリズムの全体の流れについて説明する。各項目の詳細は後の節にて述べる。
+先行研究のアルゴリズムの流れは
+\begin{enumerate}
+	\item 行座標を取得。
+	\item 列座標を取得。
+	\item 点情報を取得。
+	\item 点情報を統合。
+	\item 空行を挿入。
+\end{enumerate}
+である。
+
+\subsection{使用したデータ}
+点字の例として、「イチョーガヨワイ」と書かれた点字の圧力データを利用する。この点字は図\ref{f:ityo-gayowai}のような点字である。
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=16.0cm]{img/イチョーガヨワイ.png}
+	\caption{「イチョーガヨワイ」の点字}
+	\label{f:ityo-gayowai}
+\end{figure}
+
+\subsection{行座標の取得}
+行座標の取得方法について述べる。行座標を取得する流れは
+\begin{enumerate}
+	\item 全ての圧力データの行方向の値を加算する。
+	\item 加算した結果を式(\ref{siki:行補正})で補正する。
+	\item 補正した波形から行座標を取得する。
+\end{enumerate}
+である。詳細について述べる。
+
+「イチョーガヨワイ」と書かれた点字を読み込んだ際の行方向の合計値のグラフを図\ref{f:行方向の合計}に示す。
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=12.0cm]{img/row.png}
+	\caption{行方向の値をすべて加算した結果}
+	\label{f:行方向の合計}
+\end{figure}
+図\ref{f:行方向の合計}を式(\ref{siki:行補正})に従って補正する。
+
+\begin{eqnarray}
+	w &=& 0.4\sqrt{1-\left(\frac{13m}{45}\right)^2}\nonumber\\
+	c_i &=& w_0b_i + \sum^3_{m=1}w_m(b_{i+m}+b_{i-m})\label{siki:行補正}
+\end{eqnarray}
+このとき、$i$は対象の行数を表す。補正した結果を図\ref{f:行方向の合計_補正}に示す。
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=12.0cm]{img/row_correct.png}
+	\caption{行方向の合計値を補正した結果}
+	\label{f:行方向の合計_補正}
+\end{figure}
+図\ref{f:行方向の合計_補正}の各行に対して、上下の列と比較し、いくつの列より大きい値なのかを比較する。得られた値の上位3つの値を行座標とする。この場合、47行目、32行目、17行目が行座標であることがわかる。
+
+\subsection{列座標の取得}
+列座標の取得方法について述べる。列座標を取得する流れは
+\begin{enumerate}
+	\item 圧力データの列方向の値の合計値を求める。
+	\item 合計値を式(\ref{siki:行補正})で補正する。
+	\item 補正した波形から列座標を取得する。
+\end{enumerate}
+である。列方向の合計値のグラフを図\ref{f:列方向の合計}に示す。
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=12.0cm]{img/col.png}
+	\caption{列方向の合計値のグラフ}
+	\label{f:列方向の合計}
+\end{figure}
+図\ref{f:列方向の合計}を式(\ref{siki:行補正})に従って補正する。このとき$i$は列を意味する。補正した結果を図\ref{f:列方向の合計_補正}に示す。
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=12.0cm]{img/col_correct.png}
+	\caption{列方向の合計値を補正した結果}
+	\label{f:列方向の合計_補正}
+\end{figure}
+図\ref{f:列方向の合計_補正}の各列に対して、左右の列と比較し、いくつの列より大きい値なのかを比較する。得られた値が3以上であれば、その列を列座標とする。
+
+\subsection{点座標の取得}
+点座標は、行座標と列座標の交点の周囲の値に重みを付けて計算する。重みを図\ref{f:重み}に示す。この値が閾値を越えればそこに点があるとする。
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=8.0cm]{img/重みのつけかた.png}
+	\caption{点を認識するための重み}
+	\label{f:重み}
+\end{figure}
+
+\subsection{点情報の統合}
+点情報の統合では、各圧力データで求めた点座標を比較し、全体の点字を求める。点情報の統合の流れは
+\begin{enumerate}
+	\item すべての圧力テータに対して以下の処理を行う。
+		\begin{enumerate}
+			\item 前の圧力データの列座標と比較し、最も近い列座標との差を求める。
+			\item これまでの差の合計値を対象の列に加算する。
+		\end{enumerate}
+	\item 1つ飛ばしに以下の処理を行う。
+		\begin{enumerate}
+			\item 前の圧力データの列座標と比較し、最も近い列座標との差を求める。
+			\item 差が一定の値以上であれば新たな点、そうでなければ既に存在する点が移動したものとみなす。
+			\item 現在の圧力データを除外する。
+			\item これを圧力データの数が1になるまで繰り返す。
+		\end{enumerate}
+\end{enumerate}
+である。以上の処理により、点座標を1つに統合している。
+
+\subsection{空行の挿入}
+点座標の列間距離を利用して、全体の点字を求める。列間距離の関係は図\ref{f:列間距離}のようになっている。求めた点座標の列間距離からラベルを割り合て、その関係から空行の位置を推論し、挿入する。
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=8.0cm]{img/diffs.png}
+	\caption{列間距離の関係}
+	\label{f:列間距離}
+\end{figure}

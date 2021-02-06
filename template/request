@@ -1,0 +1,3 @@
+\subsubsection{REQUESTを受け取ったときの処理}
+REQUESTを受け取った場合の処理について述べる。REQUESTを受け取ったときに行われる処理をリスト\ref{l:FILENAME}に示す。
+\lstinputlisting[caption=REQUESTを受け取ったときの処理, label=l:FILENAME]{source/pomodoro/FILENAME.rb}

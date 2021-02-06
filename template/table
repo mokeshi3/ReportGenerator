@@ -1,0 +1,9 @@
+\begin{table}[H]
+	\centering
+	\caption{}
+	\label{t:}
+	\begin{tabular}{|c|c|}
+		\hline
+		\hline
+	\end{tabular}
+\end{table}

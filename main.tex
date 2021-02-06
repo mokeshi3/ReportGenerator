@@ -1,0 +1,181 @@
+\documentclass[dvipdfmx]{jarticle}
+\usepackage{dirtree}
+%\usepackage{subfig}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage[dvipdfmx]{color}
+\usepackage{amsmath}
+\usepackage{pdfpages}
+\usepackage[top=25truemm,bottom=30truemm,left=25truemm,right=25truemm]{geometry}
+\usepackage{here}
+\usepackage{ascmac}
+\usepackage{listings, jlisting}
+\usepackage{multirow}
+\usepackage{lscape}
+\usepackage[]{subcaption}
+
+\renewcommand{\lstlistingname}{リスト}
+\setlength{\footskip}{5truemm}
+\lstset{%
+	language={C},
+	%basicstyle={\small},%
+	%identifierstyle={\small},%
+	%commentstyle={\small},%
+	%keywordstyle={\small},%
+	%ndkeywordstyle={\small},%
+	%stringstyle={\small},
+	frame={tb},
+	breaklines=true,
+	columns=fixed,
+	basewidth=0.5em,
+	numbers=left,
+	xrightmargin=0zw,
+	xleftmargin=1zw,
+	numberstyle={\scriptsize},
+	stepnumber=1,
+	tabsize=2,
+	%numbersep=1zw,
+	lineskip=-0.5ex%
+}
+
+%https://masawada.hatenablog.jp/entry/2014/07/14/124319
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{amssymb}
+\usetikzlibrary{matrix,calc}
+
+\newcommand{\implicant}[3][0]{
+	\draw[rounded corners=3pt] ($(#2.north west)+(135:#1)$) rectangle ($(#3.south east)+(-45:#1)$);
+}
+
+%group lateral borders
+%#1-space between node and grouping line. Default=0
+%#2-top left node
+%#3-bottom right node
+\newcommand{\implicantcostats}[3][0]{
+	\draw[rounded corners=3pt] ($(rf.east |- #2.north)+(90:#1)$)-| ($(#2.east)+(0:#1)$) |- ($(rf.east |- #3.south)+(-90:#1)$);
+	\draw[rounded corners=3pt] ($(cf.west |- #2.north)+(90:#1)$) -| ($(#3.west)+(180:#1)$) |- ($(cf.west |- #3.south)+(-90:#1)$);
+}
+
+%group top-bottom borders
+%#1-space between node and grouping line. Default=0
+%#2-top left node
+%#3-bottom right node
+\newcommand{\implicantdaltbaix}[3][0]{
+	\draw[rounded corners=3pt] ($(cf.south -| #2.west)+(180:#1)$) |- ($(#2.south)+(-90:#1)$) -| ($(cf.south -| #3.east)+(0:#1)$);
+	\draw[rounded corners=3pt] ($(rf.north -| #2.west)+(180:#1)$) |- ($(#3.north)+(90:#1)$) -| ($(rf.north -| #3.east)+(0:#1)$);
+}
+
+%group corners
+%#1-space between node and grouping line. Default=0
+\newcommand{\implicantcantons}[1][0]{
+	\draw[rounded corners=3pt] ($(rf.east |- 0.south)+(-90:#1)$) -| ($(0.east |- cf.south)+(0:#1)$);
+	\draw[rounded corners=3pt] ($(rf.east |- 8.north)+(90:#1)$) -| ($(8.east |- rf.north)+(0:#1)$);
+	\draw[rounded corners=3pt] ($(cf.west |- 2.south)+(-90:#1)$) -| ($(2.west |- cf.south)+(180:#1)$);
+	\draw[rounded corners=3pt] ($(cf.west |- 10.north)+(90:#1)$) -| ($(10.west |- rf.north)+(180:#1)$);
+}
+
+%Empty Karnaugh map 4x4
+\newenvironment{Karnaugh}[2]%
+{
+	\begin{tikzpicture}[baseline=(current bounding box.north)&scale=0.8]
+	\draw (0&0) grid (4&4);
+	\draw (0&4) -- node [pos=0.8&above right&anchor=south west] {#1} node [pos=0.7&below left&anchor=north east] {#2} ++(135:1);
+	%
+	\matrix (mapa) [matrix of nodes&
+	column sep={0.8cm&between origins}&
+	row sep={0.8cm&between origins}&
+	every node/.style={minimum size=0.3mm}&
+	anchor=8.center&
+	ampersand replacement=\&] at (3.5&3.5)
+	{
+		\& |(c00)| 00         \& |(c01)| 01         \& |(c11)| 11         \& |(c10)| 10         \& |(cf)| \phantom{00} \\
+		|(r00)| 00             \& |(0)|  \phantom{0} \& |(4)|  \phantom{0} \& |(12)| \phantom{0} \& |(8)|  \phantom{0} \&                     \\
+		|(r01)| 01             \& |(1)|  \phantom{0} \& |(5)|  \phantom{0} \& |(13)| \phantom{0} \& |(9)|  \phantom{0} \&                     \\
+		|(r11)| 11             \& |(3)|  \phantom{0} \& |(7)|  \phantom{0} \& |(15)| \phantom{0} \& |(11)| \phantom{0} \&                     \\
+		|(r10)| 10             \& |(2)|  \phantom{0} \& |(6)|  \phantom{0} \& |(14)| \phantom{0} \& |(10)| \phantom{0} \&                     \\
+		|(rf) | \phantom{00}   \&                    \&                    \&                    \&                    \&                     \\
+	};
+}%
+{
+	\end{tikzpicture}
+}
+
+\newenvironment{Karnaughvuit}[2]%
+{
+	\begin{tikzpicture}[baseline=(current bounding box.north)&scale=0.8]
+	\draw (0&0) grid (4&2);
+	\draw (0&2) -- node [pos=0.7&above right&anchor=south west] {#1} node [pos=0.7&below left&anchor=north east] {#2} ++(135:1);
+	%
+	\matrix (mapa) [matrix of nodes&
+	column sep={0.8cm&between origins}&
+	row sep={0.8cm&between origins}&
+	every node/.style={minimum size=0.3mm}&
+	anchor=4.center&
+	ampersand replacement=\&] at (3.5&1.5)
+	{
+		\& |(c00)| 00         \& |(c01)| 01         \& |(c11)| 11         \& |(c10)| 10         \& |(cf)| \phantom{00} \\
+		|(r00)| 0             \& |(0)|  \phantom{0} \& |(2)|  \phantom{0} \& |(6)|  \phantom{0} \& |(4)|  \phantom{0} \&                     \\
+		|(r01)| 1             \& |(1)|  \phantom{0} \& |(3)|  \phantom{0} \& |(7)|  \phantom{0} \& |(5)|  \phantom{0} \&                     \\
+		|(rf) | \phantom{00}  \&                    \&                    \&                    \&                    \&                     \\
+	};
+}%
+{
+	\end{tikzpicture}
+}
+
+%Defines  16 values (0&1&X)
+\newcommand{\contingut}[1]{%
+	\foreach \x [count=\xi from 0] in {#1}
+	\path (\xi) node {\x};
+}
+\makeatletter
+
+\makeatletter
+\newcommand{\subsubsubsection}{\@startsection{paragraph}{4}{\z@}%
+	  {1.0\Cvs \@plus.5\Cdp \@minus.2\Cdp}%
+	    {.1\Cvs \@plus.3\Cdp}%
+		  {\reset@font\sffamily\normalsize}
+	  }
+	  \makeatother
+	  \setcounter{secnumdepth}{4}
+
+%-----------
+%タイトルの作成
+%-----------
+\makeatletter
+
+\def\@thesis{修 士 論 文}
+\def\id#1{\def\@id{#1}}
+\def\department#1{\def\@department{#1}}
+
+\def\@maketitle{
+	\begin{center}
+		%{\huge \@thesis \par} %修士論文と記載される部分
+		\vspace{10mm}
+		{\LARGE{\bf \@title }\\\par}% 論文のタイトル部分
+		\vspace{2mm}
+		{\Large -サブタイトル-}\\
+		%\vspace{10mm}
+		\vspace{20mm}
+		{\Large 学籍番号　\@id \par}	% 学籍番号部分
+		{\Large 組番号 \@department \par}	% 所属部分
+		{\Large \@author \par}			% 氏名
+		\vspace{10mm}
+		{\Large 提出日 // \par}	% 提出年月日部分
+	\end{center}
+	\par\vskip 1.5em
+}
+
+\makeatother
+
+\title{タイトル}
+\date{\today}
+\department{432}
+\id{17430}
+\author{名前}
+
+\begin{document}
+	\maketitle
+	\thispagestyle{empty}
+	\newpage
+\end{document}

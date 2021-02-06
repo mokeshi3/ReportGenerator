@@ -1,0 +1,17 @@
+\begin{figure}[H]
+	\centering
+	\begin{minipage}[b]{0.45\linewidth}
+		\centering
+		\includegraphics[width=6cm]{}
+		\subsection{}
+		\label{ff:}
+	\end{minipage}
+	\begin{minipage}[b]{0.45\linewidth}
+		\centering
+		\includegraphics[width=6cm]{}
+		\subsection{}
+		\label{ff:}
+	\end{minipage}
+	\caption{}
+	\label{f:}
+\end{figure}

@@ -1,0 +1,120 @@
+本章では、先行研究のアルゴリズムによって、圧力データを読み込んだとき、誤認識することがあった。この誤認識の原因について述べる。
+
+\subsection{エラーの原因}
+正しく点字を認識できなかったときの点情報の統合を行ったときの結果をリスト\ref{l:goninshiki}に示す。
+\begin{lstlisting}[caption=点情報の統合を行った結果, label=l:goninshiki]
+ColInfo { coord: 12.7, point: (5, 0, 0), num: 5 }
+ColInfo { coord: 22.5, point: (1, 0, 0), num: 1 }
+ColInfo { coord: 32.5, point: (6, 0, 0), num: 6 }
+ColInfo { coord: 53.56521739130435, point: (22, 23, 0), num: 23 }
+ColInfo { coord: 68.33333333333333, point: (3, 0, 0), num: 3 }
+ColInfo { coord: 81.51190476190477, point: (14, 0, 0), num: 14 }
+ColInfo { coord: 96.88888888888889, point: (6, 21, 17), num: 27 }
+ColInfo { coord: 108.8641975308642, point: (21, 27, 3), num: 27 }
+ColInfo { coord: 124.22619047619048, point: (0, 14, 0), num: 14 }
+ColInfo { coord: 134.5771604938272, point: (0, 27, 0), num: 27 }
+ColInfo { coord: 154.47222222222226, point: (0, 9, 0), num: 9 }
+ColInfo { coord: 167.74612403100775, point: (25, 16, 2), num: 43 }
+ColInfo { coord: 181.8257575757576, point: (10, 1, 23), num: 33 }
+ColInfo { coord: 192.8666666666667, point: (0, 0, 10), num: 10 }
+ColInfo { coord: 205.47222222222223, point: (19, 20, 2), num: 21 }
+ColInfo { coord: 223.58888888888893, point: (14, 13, 16), num: 30 }
+ColInfo { coord: 249.50000000000003, point: (4, 3, 0), num: 4 }
+\end{lstlisting}
+誤認識の詳細な原因について表\ref{t:goninshiki-riyuu}に示す。点情報の統合では、前後の圧力データの点座標を比較し、全体の点字の推論を行っている。
+\begin{table}[H]
+	\centering
+	\caption{リスト\ref{l:goninshiki}のように認識した要因}
+	\label{t:goninshiki-riyuu}
+	\begin{tabular}{|c|c|l|}
+		\hline
+		coord&正誤&要因\\
+		\hline
+		\hline
+		12.7&誤&ノイズを点と認識\\
+		22.5&誤&ノイズを点と認識\\
+		32.5&誤&ノイズを点と認識\\
+		53.5&正&正常な認識\\
+		68.3&誤&ノイズによるもの\\
+		81.1&誤&一定の速度以上で移動したことで68.3の点が別の点と認識されたもの\\
+		96.8&正&正常な認識\\
+		108.8&正&正常な認識\\
+		124.2&正&正常な認識\\
+		134.5&正&正常な認識\\
+		154.4&誤&一定速度移動で移動したことで167.7の点が別の点と認識されたもの\\
+		181.8&誤&2つの独立した点が1つに連結したことによるもの\\
+		192.2&正&正常な認識\\
+		205.4&正&正常な認識\\
+		223.5&誤&前の圧力データに凸点が存在しないため、新な点情報の出現を検出できない\\
+		249.5&誤&前の圧力データに凸点が存在しないため、新な点情報の出現を検出できない\\
+		\hline
+	\end{tabular}
+\end{table}
+表\ref{t:goninshiki-riyuu}より、誤認識の原因は主に「ノイズによるもの」「新たに出現した点情報であると誤認識される」「新たな点情報の出現を認識できない」の3つであることがわかる。加えて、「圧力データが正規化されていない」ことが誤認識の原因となっている。各項目について詳しく述べる。
+
+\subsection{圧力データが正規化されていない}
+現在のアルゴリズムは入力された圧力データの値を正規化せずにそのまま利用している。そのため、本来であれば点情報の取得で無視されなければならないノイズなどが点として認識されている。加えて、先行研究の論文でも触れられているように、使用されているパラメータが無作為に決定されているものがある。これらも誤認識の原因となっていることが考えられる。
+
+\subsection{ノイズによる誤認識}
+ノイズによる誤認識について報告する。ノイズによって誤認識している例として表\ref{t:goninshiki-riyuu}の12.7行目から32.5行目のときの点情報の統合の様子を図\ref{f:goninshii_noise}に示す。
+\begin{figure}[H]
+	\centering
+	\begin{minipage}[b]{0.45\linewidth}
+		\centering
+		\includegraphics[width=6cm]{img/20180510_org/CSP1353000020.csv.png}
+		\subcaption{元の圧力データ}
+		\label{ff:goninshiki_noise_original}
+	\end{minipage}
+	\begin{minipage}[b]{0.45\linewidth}
+		\centering
+		\includegraphics[width=6cm]{img/20180510/CSP1353000020.csv.png}
+		\subcaption{点と認識している様子}
+		\label{ff:goninshiki_noise_recognition}
+	\end{minipage}
+	\caption{ノイズにより誤認識している様子}
+	\label{f:goninshii_noise}
+\end{figure}
+図\ref{ff:goninshiki_noise_original}の右上にあるノイズを点として認識していることが図\ref{ff:goninshiki_noise_recognition}よりわかる。
+
+\subsection{新たな点情報であると誤認識する}
+一定速度以上で移動したことにより同一の点が別の点と誤認識されることについて報告する。表\ref{t:goninshiki-riyuu}の154.4行目のときの圧力データの様子を図\ref{ff:goninshiki_velocity}に示す。ここでの一定速度とは7のことを指す。
+\begin{figure}[H]
+	\centering
+	\begin{minipage}[b]{0.3\linewidth}
+		\centering
+		\includegraphics[width=4cm]{img/20180510/CSP1353000047.csv.png}
+	\end{minipage}
+	\begin{minipage}[b]{0.3\linewidth}
+		\centering
+		\includegraphics[width=4cm]{img/20180510/CSP1353000048.csv.png}
+	\end{minipage}
+	\begin{minipage}[b]{0.3\linewidth}
+		\centering
+		\includegraphics[width=4cm]{img/20180510/CSP1353000049.csv.png}
+	\end{minipage}
+	\caption{連続した圧力データの点の認識の様子}
+	\label{ff:goninshiki_velocity}
+\end{figure}
+図\ref{ff:goninshiki_velocity}のオレンジ色の点に注目する。各画像の上部に表示されている数字は前の圧力データの最も近くの列との差を表している。このとき、オレンジ色の点は途中で7以上移動していることがわかる。点情報の統合を行う際に、前の圧力データの中で最も近くの列座標との差を利用している。この差が一定の値以上であれば、新しい点が出現した、そうでなければ既に存在する点が移動したものとみなす。しかし、図\ref{ff:goninshiki_velocity}のオレンジ色の点は同一の点であるが、差が7であるために別の点とみなされ、新しい点が出現したと誤認識されている。
+
+\subsection{新な点情報が認識されない}
+実際の移動幅以上に移動したものとみなされることで発生する誤認識について報告する。表\ref{t:goninshiki-riyuu}の181。8行目のときの圧力データの様子を図\ref{ff:goninshiki_merge}に示す。
+\begin{figure}[H]
+	\centering
+	\begin{minipage}[b]{0.3\linewidth}
+		\centering
+		\includegraphics[width=4cm]{img/20180510/CSP1353000092.csv.png}
+	\end{minipage}
+	\begin{minipage}[b]{0.3\linewidth}
+		\centering
+		\includegraphics[width=4cm]{img/20180510/CSP1353000093.csv.png}
+	\end{minipage}
+	\begin{minipage}[b]{0.3\linewidth}
+		\centering
+		\includegraphics[width=4cm]{img/20180510/CSP1353000094.csv.png}
+	\end{minipage}
+	\caption{連続した圧力データの点の認識の様子}
+	\label{ff:goninshiki_merge}
+\end{figure}
+各画像の上部に表示されている数値は前の圧力データの最も近くの行座標との差を表している。この値の平均を取ることで圧力データがどれだけ移動しているかを判定している。図\ref{ff:goninshiki_merge}の場合、1枚目の画像では左に写る点字の圧力を点として認識できていない。しかし、2枚目の画像では点があると認識している。これにより、最も近くの行座標との差が実際の移動幅以上となり、  
+
